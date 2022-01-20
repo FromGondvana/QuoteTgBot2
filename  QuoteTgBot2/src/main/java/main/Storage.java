@@ -13,7 +13,7 @@ public class Storage {
     private static ArrayList<String> quoteList;
     private ArrayList<String> userIdList;
 
-    Storage() {
+    public Storage() {
         quoteList = new ArrayList<>();
         userIdList = new ArrayList<>();
 
