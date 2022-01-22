@@ -27,12 +27,10 @@ public class KeyboardSetting {
 
         firstKeyRow.add(new InlineKeyboardButton("Цитата"));
         firstKeyRow.get(0).setCallbackData("/show");
-        secondKeyRow.add(new InlineKeyboardButton("Пожаловаться"));
-        secondKeyRow.get(0).setCallbackData("/appeal");
-        secondKeyRow.add(new InlineKeyboardButton("Предложить"));
-        secondKeyRow.get(1).setCallbackData("/offer");
+        secondKeyRow.add(new InlineKeyboardButton("Обратная связь"));
+        secondKeyRow.get(0).setCallbackData("/feedback");
         secondKeyRow.add(new InlineKeyboardButton("Инфо"));
-        secondKeyRow.get(2).setCallbackData("/info");
+        secondKeyRow.get(1).setCallbackData("/info");
 
         keyRows.add(firstKeyRow);
         keyRows.add(secondKeyRow);
@@ -49,19 +47,19 @@ public class KeyboardSetting {
         firstKeyRow.get(0).setCallbackData("/clean");
         firstKeyRow.add(new InlineKeyboardButton("Show 10"));
         firstKeyRow.get(1).setCallbackData("/show10");
-        firstKeyRow.add(new InlineKeyboardButton("Show by index"));
+        firstKeyRow.add(new InlineKeyboardButton("Show index"));
         firstKeyRow.get(2).setCallbackData("/showindex");
         firstKeyRow.add(new InlineKeyboardButton("Delete"));
         firstKeyRow.get(3).setCallbackData("/delete");
 
         secondKeyRow.add(new InlineKeyboardButton("Print status"));
-        secondKeyRow.get(0).setCallbackData("printstatus");
-        secondKeyRow.add(new InlineKeyboardButton("Appeal list"));
-        secondKeyRow.get(1).setCallbackData("/appeallist");
-        secondKeyRow.add(new InlineKeyboardButton("Offer list"));
-        secondKeyRow.get(2).setCallbackData("/offerlist");
+        secondKeyRow.get(0).setCallbackData("/printstatus");
+        secondKeyRow.add(new InlineKeyboardButton("Feedback list"));
+        secondKeyRow.get(1).setCallbackData("/feedbacklist");
         secondKeyRow.add(new InlineKeyboardButton("Users list"));
-        secondKeyRow.get(3).setCallbackData("/userslist");
+        secondKeyRow.get(2).setCallbackData("/userslist");
+        secondKeyRow.add(new InlineKeyboardButton("Add"));
+        secondKeyRow.get(3).setCallbackData("/add");
 
         thirdKeyRow.add(new InlineKeyboardButton("Off adm mod"));
         thirdKeyRow.get(0).setCallbackData("/offAdmMod");

@@ -16,13 +16,10 @@ public class Bot extends TelegramLongPollingBot {
 
     Handler handlerCommand;
 
-    boolean isStart;
-
     Bot()
     {
         super();
 
-        isStart = false;
         handlerCommand = new Handler();
     }
 
@@ -67,18 +64,7 @@ public class Bot extends TelegramLongPollingBot {
                         }
                     }
                 });
-        Stream.of(handlerCommand.getMessSendStore().getSendMessageWaitList())
-                .forEach(list -> {
-                    for(int i = 0; i < list.size(); i++)
-                    {
-                        try {
-                            if(!list.get(i).isWait())
-                                execute(list.get(i));
-                        } catch (TelegramApiException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
+
 
         handlerCommand.getMessSendStore().clear();
     }
