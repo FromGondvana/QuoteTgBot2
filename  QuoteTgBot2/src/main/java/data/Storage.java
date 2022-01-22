@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Storage {
-    Path bufferedFilePath = Paths.get("src/main/resources/text_files/quotesFile.txt");
+    Path bufferedFilePath1 = Paths.get("src/main/resources/text_files/quote_file_greatPeople.txt");
+    Path bufferedFilePath2 = Paths.get("src/main/resources/text_files/quotesFile.txt");
     private static ArrayList<String> quoteList;
     private ArrayList<String> feedbackList;
 
@@ -17,12 +18,15 @@ public class Storage {
         quoteList = new ArrayList<>();
         feedbackList = new ArrayList<>();
 
-        startFillingStrorage();
+        startFillingStrorage(bufferedFilePath1);
+        startFillingStrorage(bufferedFilePath2);
+
+        System.out.println(quoteList.size());
     }
 
-    void startFillingStrorage() {
+    void startFillingStrorage(Path path) {
         try {
-            List<String> lines = Files.readAllLines(bufferedFilePath, StandardCharsets.UTF_8);
+            List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
             lines.stream().forEach(l -> quoteList.add(l));
         } catch (IOException e) {
             e.printStackTrace();
@@ -33,7 +37,7 @@ public class Storage {
 
         int index = (int) (Math.random() * quoteList.size());
 
-        return "Цитата №".concat(String.valueOf(index + 1)).concat("\n").concat(quoteList.get(index));
+        return "Цитата #".concat(String.valueOf(index + 1)).concat("\n").concat(quoteList.get(index));
     }
     static String listToStr(ArrayList<String> list)
     {
