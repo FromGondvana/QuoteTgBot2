@@ -1,13 +1,10 @@
-package command;
+package handler;
 import Other.WaitingResponseType;
-import main.MessageToSendStorage;
-import main.Storage;
-import main.User;
-import main.Users;
+import data.Storage;
+import data.User;
+import data.Users;
 import org.apache.log4j.Logger;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import settings.KeyboardSetting;
 
@@ -17,8 +14,9 @@ public class Handler {
     private Logger logger = Logger.getLogger(Handler.class);
     private Storage storage;
     private KeyboardSetting keySett;
-    private MessageToSendStorage messSendStore;
+    private ReceiveSendMsgController msg;
     private Users users;
+    boolean adm;
 
     final private String MAIN_ID = "846305186";
     public Handler()
@@ -26,30 +24,29 @@ public class Handler {
         storage = new Storage();
         keySett = new KeyboardSetting();
         users = new Users();
-        messSendStore = new MessageToSendStorage();
+        msg = new ReceiveSendMsgController();
+        adm = false;
     }
 
-    public void addMessage(Update update)
+    public void newUpdateMessage(Update update)
     {
-        String textMsg, chatId, response;
+        String textMsg, chatId;
         int messId;
 
         if (update.hasCallbackQuery()) {
             textMsg = update.getCallbackQuery().getData();
             chatId = update.getCallbackQuery().getMessage().getChatId().toString();
             messId = update.getCallbackQuery().getMessage().getMessageId();
-            response = parseMessage(textMsg, chatId, messId);
 
-            startFormCallbackMessage(chatId, response, messId);
+            sendMessageFromCBQuere(chatId, textMsg, messId);
         }
         else if (update.hasMessage() && update.getMessage().hasText()) {
 
             textMsg = update.getMessage().getText();
             chatId = update.getMessage().getChatId().toString();
             messId = update.getMessage().getMessageId();
-            response = parseMessage(textMsg, chatId, messId);
 
-            startFormBaseMessage(chatId, response, messId);
+            sendMessageFromBase(chatId, textMsg, messId);
         }
         else
             System.out.println("Error addMessageHandler");
@@ -57,17 +54,41 @@ public class Handler {
 
     }
 
-    private void startFormBaseMessage(String chatId, String textMsg, int messId)
+    private void sendMessageFromBase(String chatId, String textMsg, int messId)
     {
-        messSendStore.add(getSendMessage(chatId, textMsg));
-        messSendStore.add(getDelMessage(chatId, messId));
-        messSendStore.add(getDelMessage(chatId, messId - 1));
+        msg.sendMessage(chatId, parseQuereText(textMsg, chatId, messId), keySett.getKeyMark(chatId));
+        msg.deleteMessage(chatId, messId);
+        msg.deleteMessage(chatId, messId - 1);
     }
-    private void startFormCallbackMessage(String chatId, String textMsg, int messId)
+    private void sendMessageFromCBQuere(String chatId, String textMsg, int messId)
     {
-        messSendStore.add(getEditTextMessage(chatId, textMsg, messId));
+        msg.editMessageText(chatId, parseQuereText(textMsg, chatId, messId), messId, keySett.getKeyMark(chatId));
     }
-    private String parseMessage(String textMsg, String chatId, int messId)
+    private String parseQuereText(String textMsg, String chatId, int messId)
+    {
+        String response;
+        if(chatId.equals(MAIN_ID) && adm)
+        {
+            response = responseToAdmRequest(textMsg, chatId, messId);
+        }
+
+        else if(textMsg.startsWith("/"))
+        {
+            response = responseToUserRequest(textMsg, chatId);
+        }
+        else {
+            response = "Не понимаю";
+        }
+
+        if(response.equals(users.getBuffer(chatId))) {
+            response = "..............................";
+            users.setBuffer(chatId, response);
+        }
+
+        users.setBuffer(chatId, response);
+        return response;
+    }
+    private String responseToUserRequest(String textMsg, String chatId)
     {
         users.add(new User(chatId));
 
@@ -75,12 +96,11 @@ public class Handler {
         String response;
         if (!users.getExpectedAction(chatId).equals(WaitingResponseType.NON))
         {
-            System.out.println("ExpAct parse");
             if(users.getExpectedAction(chatId).equals(WaitingResponseType.FEEDBACK))
             {
                 storage.addFeedback(textMsg);
                 logger.warn(chatId.concat(" Feedback").concat(textMsg));
-                response = "Сообщение принято";
+                response = "Запрс принят";
             }
             else if(users.getExpectedAction(chatId).equals(WaitingResponseType.SHOW_INDEX))
             {
@@ -89,7 +109,7 @@ public class Handler {
                     response = storage.getQuote(Integer.parseInt(textMsg));
                 }
                 else
-                    response = "Вы отправили не индекс";
+                    response = "Не числовое значение";
 
             }
             else if(users.getExpectedAction(chatId).equals(WaitingResponseType.ADD))
@@ -105,7 +125,7 @@ public class Handler {
                     response = String.valueOf(storage.delete(Integer.parseInt(textMsg)));
                 }
                 else
-                    response = "Вы отправили не индекс";
+                    response = "Не числовое значение";
             }
             else
                 response = "Hz ExAct";
@@ -113,52 +133,36 @@ public class Handler {
             users.setWRType(chatId, WaitingResponseType.NON);
         }
         else if (textMsg.equals("/start")) {
-            if(storage.checkNewUser(chatId))
-            {
-                logger.info("new user ".concat(chatId));
-                messSendStore.add(getDelMessage(chatId, messId - 1));
-            }
             response = "Приветствую, бот знает много цитат. Жми \"Цитата\", чтобы получить случайную из них";
         }
         else if (textMsg.equals("/info"))
-            response = "Created by Oleg Kosenko 2022";
+            response = "By Oleg K 2022";
         else if (textMsg.equals("/help"))
-            response = "Hz";
+            response = "Кнопка \"Цитата\" - присылает рандомную цитату" +
+                    "\n\"Обратная связь\" - отправляйте жалобы и предложения";
         else if (textMsg.equals("/show")) {
-            System.out.println("show");
             response = storage.getRandQuote();
         }
         else if (textMsg.equals("/feedback")) {
             users.setWRType(chatId, WaitingResponseType.FEEDBACK);
-            response = "Отправте ваше обращение в следующем сообщении ";
+            response = "Отправьте ваше обращение в следующем сообщении ";
         }
         else if (textMsg.equals("/admin")) {
             logger.info("/admin push ");
             if(MAIN_ID.equals(chatId)) {
                 logger.info("/admin is true");
                 response = "Я вас приветствую";
+                adm = true;
                 keySett.setAdmKBMod(true);
             }
             else
                 response = "Отказано";
         }
-        else if(chatId.equals("846305186"))
-        {
-            response = parseAdmMessage(textMsg, chatId, messId);
-        }
-        else {
-            response = "HZZZZZ";
-        }
-
-        if(response.equals(users.getBuffer(chatId))) {
-            response = "....................";
-            users.setBuffer(chatId, response);
-        }
-
-        users.setBuffer(chatId, response);
+        else
+            response = "Повторите запрос";
         return response;
     }
-    private String parseAdmMessage(String textMsg, String chatId, int messId)
+    private String responseToAdmRequest(String textMsg, String chatId, int messId)
     {
         String response;
         if (textMsg.equals("/clean")) {
@@ -176,65 +180,45 @@ public class Handler {
             response = "Send index";
         }
         else if (textMsg.equals("/printstatus"))
-            response = storage.getStatus();
+            response = printStatus();
         else if (textMsg.equals("/feedbacklist"))
             response = storage.getFeedbackListStr();
         else if (textMsg.equals("/size"))
-            response = String.valueOf(storage.getSize());
+            response = String.valueOf(storage.getSizeQL());
         else if (textMsg.equals("/add")) {
             users.setWRType(chatId, WaitingResponseType.ADD);
             response = "Send text";
         }
         else if (textMsg.equals("/userslist"))
-            response = storage.getUserIdListStr();
+            response = users.getUsersIdStr();
         else if (textMsg.equals("/offAdmMod")) {
             keySett.setAdmKBMod(false);
+            adm = true;
             response = "Admin mod is off";
         }
         else
             response = null;
         return response;
     }
-    private SendMessage getSendMessage(String chatId, String textMsg)
+
+    public ReceiveSendMsgController getMsg()
     {
-        SendMessage outMessage = new SendMessage();
-
-        outMessage.setText(textMsg);
-        outMessage.setChatId(chatId);
-        outMessage.setReplyMarkup(keySett.getKeyMark(chatId));
-
-        return outMessage;
-    }
-    private DeleteMessage getDelMessage(String chatId, int messId)
-    {
-        DeleteMessage outMessage = new DeleteMessage();
-
-        outMessage.setMessageId(messId);
-        outMessage.setChatId(chatId);
-
-        return outMessage;
-    }
-    private EditMessageText getEditTextMessage(String chatId, String textMsg, int messId)
-    {
-        EditMessageText outMessage = new EditMessageText();
-
-        outMessage.setMessageId(messId);
-        outMessage.setChatId(chatId);
-        outMessage.setText(textMsg);
-        outMessage.setReplyMarkup(keySett.getKeyMark(chatId));
-
-        return outMessage;
-    }
-    public MessageToSendStorage getMessSendStore()
-    {
-        return messSendStore;
+        return msg;
     }
 
     private void cleanChat(String chatId, int messId)
     {
-        for(int i = 0; i < 10; i++) {
-            messSendStore.add(getDelMessage(chatId, messId - i + 2));
+        for(int i = 2; i < 12; i++) {
+            msg.deleteMessage(chatId, messId - i);
         }
+    }
+    private String printStatus()
+    {
+        String response = "Status variable:\n" +
+                "Size quote list" + storage.getSizeQL() +
+                "\nSize uset list" + users.getSize() +
+                "\nSize feedback list" + storage.getSizeFBL();
+        return response;
     }
 
 

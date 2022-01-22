@@ -1,4 +1,4 @@
-package main;
+package data;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -11,12 +11,10 @@ import java.util.List;
 public class Storage {
     Path bufferedFilePath = Paths.get("src/main/resources/text_files/quotesFile.txt");
     private static ArrayList<String> quoteList;
-    private ArrayList<String> userIdList;
     private ArrayList<String> feedbackList;
 
     public Storage() {
         quoteList = new ArrayList<>();
-        userIdList = new ArrayList<>();
         feedbackList = new ArrayList<>();
 
         startFillingStrorage();
@@ -35,16 +33,7 @@ public class Storage {
 
         int index = (int) (Math.random() * quoteList.size());
 
-        return "Цитата номер ".concat(String.valueOf(index + 1)).concat("\n").concat(quoteList.get(index));
-    }
-    public boolean checkNewUser(String chatId)
-    {
-        if(!userIdList.contains(chatId)) {
-            userIdList.add(chatId);
-            return true;
-        }
-        else
-            return false;
+        return "Цитата №".concat(String.valueOf(index + 1)).concat("\n").concat(quoteList.get(index));
     }
     static String listToStr(ArrayList<String> list)
     {
@@ -79,15 +68,6 @@ public class Storage {
             return false;
     }
 
-    public String getStatus()
-    {
-
-        String response = "Status message: \n" +
-                "Size storage: ".concat(String.valueOf(quoteList.size())) +
-                "\nUsers :".concat(String.valueOf(userIdList.size()));
-        return response;
-
-    }
     public void addQuote(String text)
     {
         quoteList.add(text);
@@ -96,16 +76,16 @@ public class Storage {
     {
         feedbackList.add(text);
     }
-    public String getUserIdListStr()
-    {
-        return listToStr(userIdList);
-    }
     public String getFeedbackListStr()
     {
         return listToStr(feedbackList);
     }
-    public int getSize()
+    public int getSizeQL()
     {
         return quoteList.size();
+    }
+    public int getSizeFBL()
+    {
+        return feedbackList.size();
     }
 }

@@ -1,5 +1,4 @@
-import command.Handler;
-import main.MessageToSendStorage;
+import handler.Handler;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -45,15 +44,15 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasMessage() || update.hasCallbackQuery()) {
-            handlerCommand.addMessage(update);
+            handlerCommand.newUpdateMessage(update);
 
             executeSendMsgList();
         }
     }
     public void executeSendMsgList() {
-        Stream.of(handlerCommand.getMessSendStore().getSendMessageList(),
-                handlerCommand.getMessSendStore().getDelMessageList(),
-                handlerCommand.getMessSendStore().getEditMessageList())
+        Stream.of(handlerCommand.getMsg().getSendMessageList(),
+                handlerCommand.getMsg().getDelMessageList(),
+                handlerCommand.getMsg().getEditMessageList())
                 .forEach(list -> {
                     for(int i = 0; i < list.size(); i++)
                     {
@@ -66,6 +65,6 @@ public class Bot extends TelegramLongPollingBot {
                 });
 
 
-        handlerCommand.getMessSendStore().clear();
+        handlerCommand.getMsg().clear();
     }
 }

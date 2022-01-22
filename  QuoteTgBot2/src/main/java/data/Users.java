@@ -1,4 +1,4 @@
-package main;
+package data;
 
 import Other.WaitingResponseType;
 
@@ -54,5 +54,18 @@ public class Users {
         if(!userList.contains(getIndexUser(id)))
             userList.get(getIndexUser(id)).buffLastMessageText = text;
     }
+    public String getUsersIdStr()
+    {
+        String response = "User id list:\n";
 
+        for(int i = 0; i < userList.size(); i++)
+        {
+            response = response.concat("\n").concat(String.valueOf(i).concat(")")).concat(userList.get(i).id);
+        }
+        return response;
+    }
+    public int getSize()
+    {
+        return userList.size();
+    }
 }
