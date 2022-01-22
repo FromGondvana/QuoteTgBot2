@@ -81,7 +81,7 @@ public class Handler {
         }
 
         if(response.equals(users.getBuffer(chatId))) {
-            response = "..............................";
+            response = "Great Quote bot 2022. Created by OlegKo";
             users.setBuffer(chatId, response);
         }
 
@@ -90,7 +90,7 @@ public class Handler {
     }
     private String responseToUserRequest(String textMsg, String chatId)
     {
-        users.add(new User(chatId));
+        users.add(chatId);
 
         logger.info("parseMessage ".concat(textMsg));
         String response;
@@ -136,7 +136,7 @@ public class Handler {
             response = "Приветствую, бот знает много цитат. Жми \"Цитата\", чтобы получить случайную из них";
         }
         else if (textMsg.equals("/info"))
-            response = "By Oleg K 2022";
+            response = "Great Quote bot 2022. Created by OlegKo";
         else if (textMsg.equals("/help"))
             response = "Кнопка \"Цитата\" - присылает рандомную цитату" +
                     "\n\"Обратная связь\" - отправляйте жалобы и предложения";
@@ -193,7 +193,7 @@ public class Handler {
             response = users.getUsersIdStr();
         else if (textMsg.equals("/offAdmMod")) {
             keySett.setAdmKBMod(false);
-            adm = true;
+            adm = false;
             response = "Admin mod is off";
         }
         else

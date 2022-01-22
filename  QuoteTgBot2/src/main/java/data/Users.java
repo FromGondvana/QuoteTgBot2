@@ -13,10 +13,14 @@ public class Users {
         userList = new ArrayList<>();
     }
 
-    public void add(User user)
+    public void add(String chatId)
     {
-        if(!userList.contains(user))
-            userList.add(user);
+        List<String> idList = new ArrayList<>();
+        userList.stream().forEach(user -> idList.add(user.id));
+
+
+        if(!idList.contains(chatId))
+            userList.add(new User(chatId));
     }
 
     public WaitingResponseType getExpectedAction(String id)

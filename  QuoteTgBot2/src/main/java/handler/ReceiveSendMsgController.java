@@ -18,19 +18,6 @@ public class ReceiveSendMsgController {
         editMessageList = new ArrayList<>();
         delMessageList = new ArrayList<>();
     }
-
-    public void add(SendMessage Message) {
-        sendMessageList.add(Message);
-    }
-
-    public void add(EditMessageText Message) {
-        editMessageList.add(Message);
-    }
-
-    public void add(DeleteMessage Message) {
-        delMessageList.add(Message);
-    }
-
     public List<SendMessage> getSendMessageList() {
         return sendMessageList;
     }
