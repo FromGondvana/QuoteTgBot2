@@ -1,30 +1,29 @@
-import command.HandlerCommand;
-import main.Storage;
+import command.Handler;
+import main.MessageToSendStorage;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import settings.KeyboardSetting;
+
+import java.util.stream.Stream;
+
 
 public class Bot extends TelegramLongPollingBot {
     final private String BOT_TOKEN = "5065117592:AAFYWpzTREUQ53ZdPEHo6pjhz92oRyawlNk";
     final private String BOT_NAME = "GreatQuoteBot";
 
-    Storage storage;
-    KeyboardSetting keySett;
-    HandlerCommand handlerCommand;
+    Handler handlerCommand;
+
+    boolean isStart;
 
     Bot()
     {
         super();
 
-        storage = new Storage();
-        keySett = new KeyboardSetting();
-        handlerCommand = new HandlerCommand(storage, keySett);
+        isStart = false;
+        handlerCommand = new Handler();
     }
 
     public static void main(String[] args) {
@@ -48,20 +47,39 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-        try {
-            if (update.hasMessage() && update.getMessage().hasText()) {
-                SendMessage outMessage = handlerCommand.getMessageUpd(update);
-                execute(outMessage);
-            }
-            else if (update.hasCallbackQuery())
-            {
-                EditMessageText editMessageText = handlerCommand.getEditTextCQMessage(update);
-                execute(editMessageText);
-            }
+        if (update.hasMessage() || update.hasCallbackQuery()) {
+            handlerCommand.addMessage(update);
+
+            executeSendMsgList();
         }
-        catch (TelegramApiException ex)
-        {
-            ex.printStackTrace();
-        }
+    }
+    public void executeSendMsgList() {
+        Stream.of(handlerCommand.getMessSendStore().getSendMessageList(),
+                handlerCommand.getMessSendStore().getDelMessageList(),
+                handlerCommand.getMessSendStore().getEditMessageList())
+                .forEach(list -> {
+                    for(int i = 0; i < list.size(); i++)
+                    {
+                        try {
+                            execute(list.get(i));
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+        Stream.of(handlerCommand.getMessSendStore().getSendMessageWaitList())
+                .forEach(list -> {
+                    for(int i = 0; i < list.size(); i++)
+                    {
+                        try {
+                            if(!list.get(i).isWait())
+                                execute(list.get(i));
+                        } catch (TelegramApiException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
+        handlerCommand.getMessSendStore().clear();
     }
 }

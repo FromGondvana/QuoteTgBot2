@@ -12,10 +12,16 @@ public class Storage {
     Path bufferedFilePath = Paths.get("src/main/resources/text_files/quotesFile.txt");
     private static ArrayList<String> quoteList;
     private ArrayList<String> userIdList;
+    private ArrayList<Integer> appealIndexList;
+    private ArrayList<String> offerList;
+
+    int lastQuoteIndex;
 
     public Storage() {
         quoteList = new ArrayList<>();
         userIdList = new ArrayList<>();
+        appealIndexList = new ArrayList<>();
+        offerList = new ArrayList<>();
 
         startFillingStrorage();
     }
@@ -30,21 +36,24 @@ public class Storage {
     }
 
     public String getRandQuote() {
-        int randVar = (int) (Math.random() * quoteList.size());
-        return quoteList.get(randVar);
-    }
-    public void checkNewChatId(String chatId)
-    {
-        if(!userIdList.contains(chatId))
-            userIdList.add(chatId);
+        lastQuoteIndex = (int) (Math.random() * quoteList.size());
 
-        System.out.println(chatId);
+        return quoteList.get(lastQuoteIndex);
+    }
+    public boolean checkNewUser(String chatId)
+    {
+        if(!userIdList.contains(chatId)) {
+            userIdList.add(chatId);
+            return true;
+        }
+        else
+            return false;
     }
     static String listToStr(ArrayList<String> list)
     {
         String response = "";
-        for(String str : list)
-            response = response.concat("\n").concat(str);
+        for(int i = 0; i < list.size(); i++)
+            response = response.concat("\n").concat(String.valueOf(i + 1)).concat(")").concat(list.get(i));
 
         return response;
     }
@@ -58,7 +67,7 @@ public class Storage {
 
         for(int i = 0; i < 10; i++)
         {
-            response = response.concat("\n\n").concat(getRandQuote());
+            response = Integer.toString(i).concat(") ").concat(response).concat("\n---------\n").concat(getRandQuote());
         }
 
         return response;
@@ -68,16 +77,38 @@ public class Storage {
         quoteList.remove(index);
     }
 
-    public int getSizeQuoteList()
+    public String getStatus()
     {
-        return quoteList.size();
+        String response = "Status message \n" +
+                "Size storage: \n".concat(String.valueOf(quoteList.size())) +
+                "Users :\n".concat(String.valueOf(userIdList));
+        return response;
     }
-    public int getSizeUserIdList()
+    public void addAppeal()
     {
-        return userIdList.size();
+        appealIndexList.add(lastQuoteIndex);
     }
     public void addQuote(String text)
     {
         quoteList.add(text);
+    }
+    public void addOfferQuote(String text)
+    {
+        offerList.add(text);
+    }
+    public String getUserIdListStr()
+    {
+        return listToStr(userIdList);
+    }
+    public String getOfferListStr()
+    {
+        return listToStr(offerList);
+    }
+    public String getAppealStr()
+    {
+        String response = "List index appeal\n";
+        appealIndexList.stream().forEach(i -> response.concat(i.toString()).concat(" "));
+
+        return response;
     }
 }
